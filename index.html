@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <title>Mapping Emergency Centers in Ramallah</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-control-search/dist/leaflet.control.search.min.css" />
+  <style>
+    body,
+    html {
+      margin: 0px;
+      height: 100%;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #map {
+      flex: 1;
+    }
+
+    .legend {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background-color: white;
+      padding: 10px;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      z-index: 1000;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+
+    .legend-color {
+      width: 20px;
+      height: 20px;
+      margin-right: 5px;
+    }
+
+    .search-box {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      z-index: 1000;
+      background-color: white;
+      padding: 10px;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+  </style>
+</head>
+
+<body>
+  <div id="map"></div>
+  <div id="legend" class="legend">
+    <div class="legend-item">
+      <div class="legend-color" style="background-color: blue;"></div>
+      Hospitals
+    </div>
+    <div class="legend-item">
+      <div class="legend-color" style="background-color: green;"></div>
+      Pharmacies
+    </div>
+    <div class="legend-item">
+      <div class="legend-color" style="background-color: red;"></div>
+      Civil Defense Centers
+    </div>
+    <div class="legend-item">
+      <div class="legend-color" style="background-color: orange;"></div>
+      Police Stations
+    </div>
+  </div>
+  <div id="search-box" class="search-box"></div>
+  <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://unpkg.com/leaflet-control-search/dist/leaflet.control.search.min.js"></script>
+  <script>
+    const mapOptions = {
+      zoomSnap: 0.5,
+      center: [31.9157301, 35.1798533],
+      zoom: 13,
+      maxZoom: 20
+    };
+
+    const map = L.map("map", mapOptions);
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      subdomains: 'abcd'
+    }).addTo(map);
+
+    // Display RamallahZones.geojson below points
+    let zonesLayer;
+    $.getJSON("RamallahZones.geojson", function(zones) {
+      zonesLayer = L.geoJson(zones, {
+        onEachFeature: function(feature, layer) {
+          layer.bindPopup("Zone Name: " + feature.properties.NAME + "<br> Mail Code: " + feature.properties.MAIL_CODE);
+        }
+      }).addTo(map).bringToBack();
+    });
+
+    // For hospitals
+    const hospitalsLayer = L.layerGroup();
+    $.getJSON("hospital.geojson", function(hospitals) {
+      L.geoJson(hospitals, {
+        pointToLayer: function(feature, latlng) {
+          return L.circleMarker(latlng, {
+            radius: 5,
+            fillColor: "blue",
+            fillOpacity: 1,
+            color: "blue",
+            weight: 1.0,
+            opacity: 0.7
+          });
+        },
+        onEachFeature: function(feature, layer) {
+          layer.bindPopup("Hospital Name: " + feature.properties.NAME_AR + "<br> Phone Number: " + feature.properties.Phone_Num + "<br> Sections: " + feature.properties.Sections);
+        }
+      }).addTo(hospitalsLayer).addTo(map).bringToFront();
+    });
+
+    // For pharmacies
+    const pharmaciesLayer = L.layerGroup();
+    $.getJSON("pharmacy.geojson", function(pharmacies) {
+      L.geoJson(pharmacies, {
+        pointToLayer: function(feature, latlng) {
+          return L.circleMarker(latlng, {
+            radius: 5,
+            fillColor: "green",
+            fillOpacity: 1,
+            color: "green",
+            weight: 1.0,
+            opacity: 0.7
+          });
+        },
+        onEachFeature: function(feature, layer) {
+          layer.bindPopup("Pharmacy Name: " + feature.properties.NAME_AR + "<br> Number: " + feature.properties.Number);
+        }
+      }).addTo(pharmaciesLayer).addTo(map).bringToFront();
+    });
+
+    // For ciivilld.geojson
+    const civilDefenseLayer = L.layerGroup();
+    $.getJSON("ciivilld.geojson", function(civilDefense) {
+      L.geoJson(civilDefense, {
+        pointToLayer: function(feature, latlng) {
+          return L.circleMarker(latlng, {
+            radius: 5,
+            fillColor: "red",
+            fillOpacity: 1,
+            color: "red",
+            weight: 1.0,
+            opacity: 0.7
+          });
+        },
+        onEachFeature: function(feature, layer) {
+          layer.bindPopup("Name: " + feature.properties.Name + "<br> Phone Number: " + feature.properties.number_pho + "<br><a href='https://www.google.com/maps/search/%D8%A7%D9%84%D9%85%D8%AF%D9%8A%D8%B1%D9%8A%D8%A9+%D8%A7%D9%84%D8%B9%D8%A7%D9%85%D8%A9+%D9%84%D8%AF%D9%81%D8%A7%D8%B9+%D8%A7%D9%84%D9%85%D8%AF%D9%86%D9%8A%E2%80%AD/@31.8912864,35.1572997,13z?entry=ttu' target='_blank'>الموقع على خرائط جوجل</a>");
+        }
+      }).addTo(civilDefenseLayer).addTo(map).bringToFront();
+    });
+
+    // For Police.geojson
+    const policeLayer = L.layerGroup();
+    $.getJSON("Police.geojson", function(police) {
+      L.geoJson(police, {
+        pointToLayer: function(feature, latlng) {
+          return L.circleMarker(latlng, {
+            radius: 5,
+            fillColor: "orange",
+            fillOpacity: 1,
+            color: "orange",
+            weight: 1.0,
+            opacity: 0.7
+          });
+        },
+        onEachFeature: function(feature, layer) {
+          layer.bindPopup("Name: " + feature.properties.NAME_AR_1 + "<br> Phone Number: " + feature.properties.number_pho);
+        }
+      }).addTo(policeLayer).addTo(map).bringToFront();
+    });
+
+    // Search Control
+    const searchControl = new L.Control.Search({
+      layer: L.layerGroup([hospitalsLayer, pharmaciesLayer, civilDefenseLayer, policeLayer]),
+      propertyName: 'NAME_AR',
+      marker: false,
+      moveToLocation: function(latlng, title, map) {
+        map.setView(latlng, 17); // set the zoom level to 17 when a location is found
+      }
+    });
+    searchControl.addTo(map);
+
+  </script>
+</body>
+
+</html>

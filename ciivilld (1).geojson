@@ -1,0 +1,4 @@
+{
+  "type" : "FeatureCollection",
+  "features" : [{"type":"Feature","id":0,"geometry":{"type":"Point","coordinates":[35.201538621370894,31.890704861469771]},"properties":{"FID":0,"Id":0,"number_pho":22955880,"Name":"الدفاع المدني","x":169249.54999999999,"y":144239.42000000001}},{"type":"Feature","id":1,"geometry":{"type":"Point","coordinates":[35.187312572922153,31.893095858357842]},"properties":{"FID":1,"Id":0,"number_pho":22955880,"Name":"الدفاع المدني","x":167903.75,"y":144504.76999999999}}]
+}
